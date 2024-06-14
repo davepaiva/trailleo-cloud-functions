@@ -1,4 +1,4 @@
-# Trailleo Project
+# Trailleo backend
 
 ## Overview
 
@@ -22,8 +22,31 @@ Modules and packages are central to any go project. In this project I have divid
 
 ## Environment variables
 
-env file is `env.yaml` which is present in every API module folder.
+env file is `env.yaml` which is present in every API module folder. Add the following to env.yaml:
+
+```
+DB_URI: <your mongo db uri>
+
+```
 
 ## Deploying
 
-Before deploying make sure
+Before deploying make sure you have the glocud CLI installed and configured to the required project. Also make sure google cloud functions are enabled.
+Do deploy a function
+
+- navigate to the folder `./functions/<function folder>`.
+- make the `deploy.sh` bash script executable by running `chmod +x deploy.sh` from the root of the function module folder
+- run `./deploy.sh`
+
+## Running & debugging locally
+
+- create a script file called `run-local.sh` with the following content
+
+```
+DB_URI="<your mongo db uri>"
+FUNCTION_NAME="<the function name as specified inside the init() function inside function.go pkg>"
+DB_URI=$DB_URI FUNCTION_TARGET=$FUNCTION_NAME LOCAL_ONLY=true go run cmd/main.go
+```
+
+- make the `run-local.sh` bash script executable by running `chmod +x run-local.sh` from the root of the function module folder
+- run `run-local.sh`
