@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is the backend for trailleo. It was migrated away from a monolith written in Nodejs and hosted on AWS EC2. It was noticed that it was becoming expensive to keep this project running given the number of MAUs were seeing. So for a couple of years it was taken down due to AWS Bills being too high. Untill I decided to rewrite it in Golang (becuase I wanted to learn golang and this was the perfect opportunity)
+This is the backend for trailleo. It was migrated away from a monolith written in Nodejs and hosted on AWS EC2. We noticed that it was becoming expensive to keep this project running given the number of MAUs we were seeing. So for a couple of years it was taken down due to AWS Bills being too high. Untill I decided to rewrite it in Golang (becuase I wanted to learn golang and this was the perfect opportunity)
 
 ## Features
 
