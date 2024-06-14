@@ -26,7 +26,6 @@ env file is `env.yaml` which is present in every API module folder. Add the foll
 
 ```
 DB_URI: <your mongo db uri>
-
 ```
 
 ## Deploying
