@@ -1,7 +1,7 @@
 package types
 
 type Response struct {
-    Data any
-    Message string
+    Data    any    `json:"data"`
+    Message string `string:"message"`
+    Meta any       `json:"meta"`
 }
-

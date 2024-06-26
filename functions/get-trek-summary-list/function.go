@@ -82,6 +82,33 @@ func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 		pipeline = append(pipeline, difficultyStage)
 	}
 
+		// Add a stage to count the total number of documents
+		countStage := bson.M{
+			"$count": "totalCount",
+		}
+		countPipeline := append(pipeline, countStage)
+	
+		countCursor, err := collection.Aggregate(ctx, countPipeline)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	
+		var countResult []bson.M
+		err = countCursor.All(ctx, &countResult); 
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	
+		totalCount := 0
+		if len(countResult) > 0 {
+			totalCount =  int(countResult[0]["totalCount"].(int32))
+		}
+	
+		totalPages := (totalCount + limit - 1) / limit
+	
+
 	// Add skip, limit, and project stages
 	pipeline = append(pipeline,
 		bson.M{"$skip": skip},
@@ -94,6 +121,8 @@ func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 			"distance":   1,
 			"altitude":   1,
 			"difficulty": 1,
+			"slug":       1,
+			"duration":   1,
 		}},
 	)
 
@@ -110,6 +139,6 @@ func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response := types.Response{Message: "success", Data: trekSummaries}
-	utils.JsonResponse(w, response)
+	response := types.Response{Message: "success", Data: trekSummaries, Meta: map[string]interface{}{"pageCount": totalPages}};
+	utils.JsonResponse(w, response);
 }

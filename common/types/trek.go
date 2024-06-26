@@ -26,6 +26,8 @@ type TrekSummary struct {
 	Distance   int                `bson:"distance" json:"distance"`
 	Altitude   int                `bson:"altitude" json:"altitude"`
 	Difficulty string             `bson:"difficulty" json:"difficulty"`
+	Slug       string             `bson:"slug" json:"slug"`
+	Duration   string             `bson:"duration" json:"duration"`
 }
 
 type TrekSlugItem struct {
