@@ -167,6 +167,13 @@ func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response := types.Response{Message: "success", Data: trekSummaries, Meta: map[string]interface{}{"pageCount": totalPages}};
-	utils.JsonResponse(w, response);
+	response := types.Response{
+		Message: "success",
+		Data: trekSummaries,
+		Meta: map[string]interface{}{
+			"pageCount": totalPages,
+			"currentPage": page, // Add current page to the response
+		},
+	}
+	utils.JsonResponse(w, response)
 }
