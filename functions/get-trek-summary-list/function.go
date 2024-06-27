@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
@@ -20,7 +21,9 @@ func init() {
 
 func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 	search := req.URL.Query().Get("search")
-	difficulty := req.URL.Query().Get("difficulty")
+	difficulty_filter := req.URL.Query().Get("difficulty")
+	monthsFilter:= req.URL.Query().Get("months")
+	whatToExpectFilter:= req.URL.Query().Get("what_to_expect")
 
 	page, err := strconv.Atoi(req.URL.Query().Get("page"))
 	if err != nil || page < 1 {
@@ -74,13 +77,37 @@ func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Create the difficulty filter
-	if difficulty != "" {
+	if difficulty_filter != "" {
 		difficultyStage := bson.M{
 			"$match": bson.M{
-				"difficulty": difficulty,
+				"difficulty": difficulty_filter,
 			},
 		}
 		pipeline = append(pipeline, difficultyStage)
+	}
+
+	if monthsFilter !=""{
+		months := strings.Split(monthsFilter, ",")
+		monthsFilterStage := bson.M{
+			"$match": bson.M{
+				"months": bson.M{
+					"$in": months,
+				},
+			},
+		}
+		pipeline = append(pipeline, monthsFilterStage)
+	}
+
+	if whatToExpectFilter != ""{
+		whatToExpect:=strings.Split(whatToExpectFilter, ",")
+		whatToExpectFilterStage:=bson.M{
+			"$match": bson.M{
+				"what_to_expect": bson.M{
+					"$in": whatToExpect,
+				},
+			},
+		}
+		pipeline=append(pipeline, whatToExpectFilterStage)
 	}
 
 		// Add a stage to count the total number of documents
