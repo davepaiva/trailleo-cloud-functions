@@ -20,6 +20,9 @@ func init() {
 }
 
 func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
+	if utils.SetCORSHeaders(w, req) {
+		return
+	}
 	search := req.URL.Query().Get("search")
 	difficulty_filter := req.URL.Query().Get("difficulty")
 	monthsFilter:= req.URL.Query().Get("months")

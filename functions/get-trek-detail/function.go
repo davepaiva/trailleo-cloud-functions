@@ -18,6 +18,9 @@ func init(){
 }
 
 func GetTrekDetail (w http.ResponseWriter, req *http.Request){
+	if utils.SetCORSHeaders(w, req) {
+		return
+	}
 	slug := req.URL.Query().Get("slug")
 	if slug == "" {
 		http.Error(w, "Missing slug parameter", http.StatusBadRequest)
