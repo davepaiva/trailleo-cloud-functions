@@ -3,6 +3,7 @@ package function
 import (
 	"context"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -30,7 +31,7 @@ func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 		limit = 10
 	}
 	skip := (page - 1) * limit
-	collection := db.Client.Database("trailleo").Collection("treks")
+	collection := db.Client.Database(os.Getenv("DB_NAME")).Collection("treks")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 

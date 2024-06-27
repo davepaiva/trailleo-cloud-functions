@@ -3,6 +3,7 @@ package function
 import (
 	"context"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
@@ -22,7 +23,7 @@ func GetTrekDetail (w http.ResponseWriter, req *http.Request){
 		http.Error(w, "Missing slug parameter", http.StatusBadRequest)
 		return
 	}
-	collection := db.Client.Database("trailleo").Collection("treks")
+	collection := db.Client.Database(os.Getenv("DB_NAME")).Collection("treks")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	filter := bson.M{"slug": slug}
