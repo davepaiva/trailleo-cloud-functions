@@ -12,7 +12,6 @@ import (
 	"github.com/davepaiva/trailleo-google-cloud-functions/common/db"
 	"github.com/davepaiva/trailleo-google-cloud-functions/common/types"
 	"github.com/davepaiva/trailleo-google-cloud-functions/common/utils"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"googlemaps.github.io/maps"
 )
@@ -33,18 +32,12 @@ func GetSearchSuggestions(w http.ResponseWriter, req *http.Request) {
 	search := req.URL.Query().Get("search")
 
 	sessionTokenStr := req.URL.Query().Get("session_token")
-	if sessionTokenStr == "" {
-		http.Error(w, "session_token is required", http.StatusBadRequest)
-		return
-	}
 
-	sessionTokenUuid, err := uuid.Parse(sessionTokenStr)
+	sessionToken, err := utils.GetGoogleMapsToken(sessionTokenStr)
 	if err != nil {
-		http.Error(w, "Invalid session_token format", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	sessionToken := maps.PlaceAutocompleteSessionToken(sessionTokenUuid)
 
 	page, err := strconv.Atoi(req.URL.Query().Get("page"))
 	if err != nil || page < 1 {

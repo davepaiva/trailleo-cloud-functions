@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 	"github.com/davepaiva/trailleo-google-cloud-functions/common/types"
 	"github.com/davepaiva/trailleo-google-cloud-functions/common/utils"
 	"go.mongodb.org/mongo-driver/bson"
+	"googlemaps.github.io/maps"
 )
 
 func init() {
@@ -27,6 +29,15 @@ func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 	difficulty_filter := req.URL.Query().Get("difficulty")
 	monthsFilter:= req.URL.Query().Get("months")
 	whatToExpectFilter:= req.URL.Query().Get("what_to_expect")
+	sessionTokenStr:= req.URL.Query().Get("session_token")
+	placeId:= req.URL.Query().Get("maps_place_id")
+
+	var (
+		lat float64
+		lng float64
+	)
+
+
 
 	page, err := strconv.Atoi(req.URL.Query().Get("page"))
 	if err != nil || page < 1 {
@@ -41,6 +52,32 @@ func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
+	c, err := maps.NewClient(maps.WithAPIKey(os.Getenv("MAPS_API_KEY")))
+	if err!=nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if sessionTokenStr!="" && placeId!=""{
+		sessionToken, err := utils.GetGoogleMapsToken(sessionTokenStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		mapsReq := &maps.PlaceDetailsRequest{
+			PlaceID:      placeId,
+			SessionToken: sessionToken,
+		}
+	
+		mapsRes, err := c.PlaceDetails(context.Background(), mapsReq)
+		if err != nil {
+			log.Fatalf("fatal error: %s", err)
+		}
+	
+		lat = mapsRes.Geometry.Location.Lat
+		lng = mapsRes.Geometry.Location.Lng
+	}
+
 	// Initialize the pipeline for running multiple aggregations= filters
 	pipeline := []bson.M{}
 
@@ -48,7 +85,7 @@ func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 	if search != "" {
 		searchStage := bson.M{
 			"$search": bson.M{
-				"index": "trek_text_location_autocomplete", // Name of your Atlas Search index
+				"index": "trek_name_place_autocomplete", // Name of your Atlas Search index
 				"compound": bson.M{
 					"should": []bson.M{
 						{
@@ -78,6 +115,18 @@ func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 		}
 		pipeline = append(pipeline, searchStage)
 	}
+
+	    // Add geospatial filter if lat and lng are provided
+		if lat != 0 && lng != 0 {
+			geoFilter := bson.M{
+				"$geoWithin": bson.M{
+					"$centerSphere": []interface{}{
+						[]float64{lng, lat}, 50.0 / 6378.1, // 50km radius, Earth's radius in km
+					},
+				},
+			}
+			pipeline = append(pipeline, bson.M{"$match": bson.M{"location": geoFilter}})
+		}
 
 	// Create the difficulty filter
 	if difficulty_filter != "" {
