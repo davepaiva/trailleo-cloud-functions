@@ -121,7 +121,7 @@ func GetTrekSummaryList(w http.ResponseWriter, req *http.Request) {
 			geoFilter := bson.M{
 				"$geoWithin": bson.M{
 					"$centerSphere": []interface{}{
-						[]float64{lng, lat}, 50.0 / 6378.1, // 50km radius, Earth's radius in km
+						[]float64{lng, lat}, 100.0 / 6378.1, // 50km radius, Earth's radius in km
 					},
 				},
 			}
