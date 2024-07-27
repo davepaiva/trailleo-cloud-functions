@@ -49,3 +49,50 @@ DB_URI=$DB_URI FUNCTION_TARGET=$FUNCTION_NAME LOCAL_ONLY=true go run cmd/main.go
 
 - make the `run-local.sh` bash script executable by running `chmod +x run-local.sh` from the root of the function module folder
 - run `run-local.sh`
+
+## Updating CORS on Google Storage Bucket
+
+To update CORS on a Google Storage Bucket, follow these steps:
+
+1. **Create a CORS configuration file**: Create a JSON file named `cors.json` with the following content:
+
+```
+[
+	{
+		"maxAgeSeconds": 3600,
+		"method": ["GET", "HEAD", "OPTIONS"],
+		"origin": ["*"],
+		"responseHeader": [
+			"Content-Type",
+			"Access-Control-Allow-Origin",
+			"Access-Control-Allow-Methods",
+			"Access-Control-Allow-Headers"
+		]
+	}
+]
+
+```
+
+This configuration allows GET, HEAD, and OPTIONS requests from any origin, with a maximum age of 3600 seconds.
+
+2. **Upload the CORS configuration file to your bucket**: Use the `gsutil` command-line tool to upload the `cors.json` file to your Google Storage Bucket.
+
+**Using `glcoud` & `gsutils`:**
+
+- Run the following command in your terminal:
+
+```
+gcloud storage buckets update gs://<your-bucket-name>  --cors-file=<path_to_file>
+```
+
+Replace `<your-bucket-name>` & `path_to_file` with the name of your Google Storage Bucket and cors file path.
+
+3. **Verify the CORS configuration**: After uploading the CORS configuration file, verify that it has been successfully applied to your bucket. You can do this by checking the bucket's CORS configuration in the Google Cloud Console or by using the `gsutil` command-line tool.
+
+- Run the following command in your terminal:
+
+```
+gsutil cors get gs://<your-bucket-name>
+```
+
+This should display the CORS configuration for your bucket.
